@@ -1,0 +1,48 @@
+version: "3"
+services:
+  mongodb:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+
+  keycloak:
+    image: jboss/keycloak
+    restart: always
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: password
+      KEYCLOAK_USER: "admin"
+      KEYCLOAK_PASSWORD: "password"
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    networks:
+      - keycloak_network
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: keycloak
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+    networks:
+      - keycloak_network
+
+networks:
+  keycloak_network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  mongodb:
